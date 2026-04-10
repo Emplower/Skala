@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- PWA мета-теги для iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Скала Учёт">
+    <meta name="theme-color" content="#1e3a2f">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- Иконки для домашнего экрана iOS -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%231e3a2f'/%3E%3Ctext x='90' y='120' font-size='100' text-anchor='middle' fill='white' font-family='system-ui' font-weight='bold'%3E🧗%3C/text%3E%3C/svg%3E">
+    
+    <!-- Splash screen для iOS -->
+    <link rel="apple-touch-startup-image" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1170 2532'%3E%3Crect width='1170' height='2532' fill='%231e3a2f'/%3E%3Ctext x='585' y='1300' font-size='200' text-anchor='middle' fill='white' font-family='system-ui'%3E🧗%3C/text%3E%3Ctext x='585' y='1500' font-size='60' text-anchor='middle' fill='%23ffffffcc' font-family='system-ui'%3EСкала Учёт%3C/text%3E%3C/svg%3E">
+    
+    <!-- Manifest для Android PWA -->
+    <link rel="manifest" href="data:application/manifest+json,{name:'Скала Учёт',short_name:'Скала',icons:[{src:'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 512 512\'%3E%3Crect width=\'512\' height=\'512\' rx=\'100\' fill=\'%231e3a2f\'/%3E%3Ctext x=\'256\' y=\'350\' font-size=\'280\' text-anchor=\'middle\' fill=\'white\'%3E🧗%3C/text%3E%3C/svg%3E',sizes:'512x512',type:'image/svg+xml'}],display:'standalone',background_color:'#1e3a2f',theme_color:'#1e3a2f'}">
+    
+    <title>🧗 Скала Учёт</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            background: #f5f7f4;
+            min-height: 100vh;
+            /* Важно для iOS Safe Area */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        
+        .app {
+            max-width: 600px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: #f5f7f4;
+            display: flex;
+            flex-direction: column;
+            /* Компенсация статус-бара */
+            padding-top: calc(12px + env(safe-area-inset-top));
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            padding-left: max(16px, env(safe-area-inset-left));
+            padding-right: max(16px, env(safe-area-inset-right));
+        }
+        
+        /* Заголовок в стиле iOS */
+        .header {
+            margin-bottom: 16px;
+        }
+        
+        h1 {
+            font-size: 34px;
+            font-weight: 700;
+            color: #1e3a2f;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .subtitle {
+            font-size: 15px;
+            color: #6b7f74;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+        
+        /* Карточка баланса - iOS стиль */
+        .balance-card {
+            background: linear-gradient(135deg, #1e3a2f 0%, #2a5440 100%);
+            border-radius: 20px;
+            padding: 24px 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        
+        .balance-label {
+            font-size: 15px;
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+        }
+        
+        .balance-value {
+            font-size: 72px;
+            font-weight: 800;
+            color: white;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        
+        .balance-footer {
+            display: flex;
+            justify-content: space-between;
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+        }
+        
+        /* Форма ввода - iOS стиль */
+        .form-section {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        .input-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #6b7f74;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        
+        .ios-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1.5px solid #e0e8e2;
+            border-radius: 12px;
+            font-size: 17px;
+            background: #fafbfa;
+            transition: all 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .ios-input:focus {
+            outline: none;
+            border-color: #1e3a2f;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(30,58,47,0.1);
+        }
+        
+        /* Кнопки в iOS стиле */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        
+        .ios-button {
+            flex: 1;
+            padding: 16px 12px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            border: none;
+            background: #f0f4f1;
+            color: #1e3a2f;
+            cursor: pointer;
+            transition: all 0.15s;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        .ios-button:active {
+            opacity: 0.7;
+            transform: scale(0.98);
+        }
+        
+        .ios-button-primary {
+            background: #1e3a2f;
+            color: white;
+        }
+        
+        .ios-button-danger {
+            background: #fff1f0;
+            color: #c41e1e;
+        }
+        
+        /* История - iOS стиль */
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            margin-top: 8px;
+        }
+        
+        .history-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1e3a2f;
+        }
+        
+        .history-list {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            flex: 1;
+            max-height: 400px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 0.5px solid #eef2ee;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #f0f6f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 14px;
+            font-size: 20px;
+        }
+        
+        .history-content {
+            flex: 1;
+        }
+        
+        .history-date {
+            font-weight: 600;
+            color: #1e3a2f;
+            font-size: 16px;
+        }
+        
+        .history-description {
+            color: #7a9084;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+        
+        .history-amount {
+            font-weight: 700;
+            font-size: 18px;
+        }
+        
+        .amount-positive {
+            color: #2a8e5a;
+        }
+        
+        .amount-negative {
+            color: #c41e1e;
+        }
+        
+        .empty-state {
+            padding: 40px 20px;
+            text-align: center;
+            color: #9aada3;
+            font-size: 15px;
+        }
+        
+        .footer-actions {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* Стили для скроллбара iOS */
+        .history-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .history-list::-webkit-scrollbar-thumb {
+            background: #c5d4cb;
+            border-radius: 4px;
+        }
+        
+        /* Убираем стандартные стрелки в number input */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* Адаптация под темную тему iOS (автоматически) */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #0a0f0c;
+            }
+            .app {
+                background: #0a0f0c;
+            }
+            h1, .history-title {
+                color: #e0ebe4;
+            }
+            .subtitle {
+                color: #8a9f94;
+            }
+            .form-section, .history-list {
+                background: #1c2621;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            }
+            .input-label {
+                color: #9aada3;
+            }
+            .ios-input {
+                background: #2a362f;
+                border-color: #3a4a40;
+                color: #e0ebe4;
+            }
+            .ios-input:focus {
+                background: #1c2621;
+                border-color: #4a7a5e;
+            }
+            .ios-button {
+                background: #2a362f;
+                color: #e0ebe4;
+            }
+            .ios-button-primary {
+                background: #2a5440;
+            }
+            .history-item {
+                border-bottom-color: #2a362f;
+            }
+            .history-icon {
+                background: #2a362f;
+            }
+            .history-date {
+                color: #e0ebe4;
+            }
+            .history-description {
+                color: #8a9f94;
+            }
+            .empty-state {
+                color: #6b7f74;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <div class="header">
+            <h1>
+                <span>🧗‍♂️</span>
+                <span>Скала Учёт</span>
+            </h1>
+            <div class="subtitle">Твои занятия всегда под контролем</div>
+        </div>
+        
+        <!-- Balance Card -->
+        <div class="balance-card">
+            <div class="balance-label">Осталось занятий</div>
+            <div class="balance-value" id="balanceDisplay">0</div>
+            <div class="balance-footer">
+                <span>🧾 Активный баланс</span>
+                <span>⛰️ На скалы!</span>
+            </div>
+        </div>
+        
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="input-group">
+                <div class="input-label">📅 Дата операции</div>
+                <input type="date" id="dateInput" class="ios-input">
+            </div>
+            
+            <div class="input-group">
+                <div class="input-label">🔢 Количество занятий (для оплаты)</div>
+                <input type="number" id="amountInput" class="ios-input" value="4" min="1" step="1" inputmode="numeric">
+            </div>
+            
+            <div class="button-group">
+                <button class="ios-button ios-button-primary" id="addPaymentBtn">
+                    💰 Оплатил
+                </button>
+                <button class="ios-button" id="addVisitBtn">
+                    ✅ Отметить
+                </button>
+            </div>
+            
+            <div style="margin-top: 12px; padding: 8px 4px;">
+                <span style="color: #6b7f74; font-size: 13px;">
+                    💡 «Оплатил» — добавляет занятия<br>
+                    💡 «Отметить» — списывает 1 занятие
+                </span>
+            </div>
+        </div>
+        
+        <!-- History Section -->
+        <div class="history-header">
+            <div class="history-title">📋 История</div>
+            <button class="ios-button" id="clearHistoryBtn" style="padding: 8px 16px; font-size: 14px;">
+                Очистить
+            </button>
+        </div>
+        
+        <div class="history-list" id="historyList">
+            <div class="empty-state">
+                История пуста<br>
+                Добавьте первую операцию
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer-actions">
+            <button class="ios-button ios-button-danger" id="resetBtn" style="padding: 12px 24px;">
+                Сбросить всё
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        (function() {
+            "use strict";
+            
+            // Storage key
+            const STORAGE_KEY = 'climbing_pwa_app';
+            
+            // DOM elements
+            const balanceDisplay = document.getElementById('balanceDisplay');
+            const historyList = document.getElementById('historyList');
+            const dateInput = document.getElementById('dateInput');
+            const amountInput = document.getElementById('amountInput');
+            const addPaymentBtn = document.getElementById('addPaymentBtn');
+            const addVisitBtn = document.getElementById('addVisitBtn');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            // State
+            let transactions = [];
+            let currentBalance = 0;
+            
+            // Set today's date as default
+            function setTodayDate() {
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                dateInput.value = `${year}-${month}-${day}`;
+            }
+            setTodayDate();
+            
+            // Load from storage
+            function loadFromStorage() {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    try {
+                        const data = JSON.parse(stored);
+                        transactions = data.transactions || [];
+                        currentBalance = data.currentBalance || 0;
+                        if (currentBalance < 0) currentBalance = 0;
+                    } catch (e) {
+                        console.warn('Failed to parse storage, starting fresh');
+                        transactions = [];
+                        currentBalance = 0;
+                    }
+                } else {
+                    // Пустое начальное состояние
+                    transactions = [];
+                    currentBalance = 0;
+                }
+                render();
+            }
+            
+            // Save to storage
+            function saveToStorage() {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    transactions: transactions,
+                    currentBalance: currentBalance
+                }));
+            }
+            
+            // Add payment
+            function addPayment(date, amount) {
+                if (!date) {
+                    alert('Выберите дату');
+                    return false;
+                }
+                
+                const numAmount = parseInt(amount);
+                if (isNaN(numAmount) || numAmount <= 0) {
+                    alert('Введите корректное количество занятий');
+                    return false;
+                }
+                
+                const newBalance = currentBalance + numAmount;
+                
+                transactions.push({
+                    id: Date.now() + '-' + Math.random().toString(36),
+                    type: 'payment',
+                    date: date,
+                    amount: numAmount,
+                    balanceAfter: newBalance,
+                    description: `Оплата блока (${numAmount} ${getLessonWord(numAmount)})`
+                });
+                
+                currentBalance = newBalance;
+                saveToStorage();
+                render();
+                return true;
+            }
+            
+            // Add visit (списать 1 занятие)
+            function addVisit(date) {
+                if (!date) {
+                    alert('Выберите дату');
+                    return false;
+                }
+                
+                if (currentBalance <= 0) {
+                    alert('Нет доступных занятий. Сначала оплатите блок.');
+                    return false;
+                }
+                
+                const newBalance = currentBalance - 1;
+                
+                transactions.push({
+                    id: Date.now() + '-' + Math.random().toString(36),
+                    type: 'visit',
+                    date: date,
+                    amount: 1,
+                    balanceAfter: newBalance,
+                    description: 'Посещение занятия'
+                });
+                
+                currentBalance = newBalance;
+                saveToStorage();
+                render();
+                return true;
+            }
+            
+            // Get correct word form
+            function getLessonWord(num) {
+                const n = Math.abs(num) % 100;
+                const n1 = n % 10;
+                if (n > 10 && n < 20) return 'занятий';
+                if (n1 > 1 && n1 < 5) return 'занятия';
+                if (n1 === 1) return 'занятие';
+                return 'занятий';
+            }
+            
+            // Format date for display
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                const parts = dateStr.split('-');
+                if (parts.length === 3) {
+                    return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                }
+                return dateStr;
+            }
+            
+            // Clear history only (keep balance)
+            function clearHistory() {
+                if (transactions.length === 0) return;
+                if (confirm('Очистить историю операций? Баланс останется прежним.')) {
+                    transactions = [];
+                    saveToStorage();
+                    render();
+                }
+            }
+            
+            // Full reset
+            function fullReset() {
+                if (confirm('Сбросить все данные? Баланс и история будут удалены.')) {
+                    transactions = [];
+                    currentBalance = 0;
+                    saveToStorage();
+                    setTodayDate();
+                    amountInput.value = '4';
+                    render();
+                }
+            }
+            
+            // Render UI
+            function render() {
+                // Update balance
+                balanceDisplay.textContent = currentBalance;
+                
+                // Render history
+                if (transactions.length === 0) {
+                    historyList.innerHTML = '<div class="empty-state">История пуста<br>Добавьте первую операцию</div>';
+                    return;
+                }
+                
+                // Sort by date (newest first)
+                const sorted = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
+                
+                let html = '';
+                sorted.forEach(t => {
+                    const isPayment = t.type === 'payment';
+                    const sign = isPayment ? '+' : '−';
+                    const amountClass = isPayment ? 'amount-positive' : 'amount-negative';
+                    const icon = isPayment ? '💰' : '🧗';
+                    
+                    html += `
+                        <div class="history-item">
+                            <div class="history-icon">${icon}</div>
+                            <div class="history-content">
+                                <div class="history-date">${formatDate(t.date)}</div>
+                                <div class="history-description">${t.description}</div>
+                            </div>
+                            <div class="history-amount ${amountClass}">
+                                ${sign}${t.amount} (${t.balanceAfter})
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                historyList.innerHTML = html;
+            }
+            
+            // Event handlers
+            function handleAddPayment() {
+                if (addPayment(dateInput.value, amountInput.value)) {
+                    amountInput.value = '4';
+                }
+            }
+            
+            function handleAddVisit() {
+                addVisit(dateInput.value);
+            }
+            
+            // Initialize
+            function init() {
+                loadFromStorage();
+                
+                addPaymentBtn.addEventListener('click', handleAddPayment);
+                addVisitBtn.addEventListener('click', handleAddVisit);
+                clearHistoryBtn.addEventListener('click', clearHistory);
+                resetBtn.addEventListener('click', fullReset);
+                
+                // Prevent zoom on double tap
+                document.addEventListener('touchstart', (e) => {
+                    if (e.touches.length > 1) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+            }
+            
+            init();
+        })();
+    </script>
+</body>
+</html>
